@@ -43,6 +43,8 @@ if ($ok =~ /^Y/i){
 
 	my $fax = Fax::Hylafax::Client->sendfax(
 		host		=> $hostname || '',
+		user		=> $user || '',
+		password	=> $password || '',
 		dialstring	=> $dialstring || '',
 		docfile		=> $docfile || '',
 		notifyaddr	=> $notifyaddr || '',

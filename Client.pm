@@ -19,29 +19,31 @@ require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(faxinfo faxrm faxstat sendfax sendpage);
 
-our $VERSION = "1.01";
+our $VERSION = "1.02";
 
 our $Host;
 our $Port;
 our $User;
 our $Password;
 our $Passive;
+our $Debug;
 our $NotifyAddr;
 
 
-sub faxinfo {
+sub faxinfo
+{
 	shift if $_[0] eq __PACKAGE__;
 	my %param  = scalar @_ == 1 ? ('jobid', shift) : @_;
-	my $self  = {
+	my $self = {
 		TRACE	=> '',
 		SUCCESS	=> '',
 		CONTENT	=> '',
 	};
 
 	##  Set defaults
-	$param{host}		||= $Host	|| 'localhost';
-	$param{port}		||= $Port	|| '4559';
-	$param{user}		||= $User	|| 'anonymous';
+	$param{host}		||= $Host		|| 'localhost';
+	$param{port}		||= $Port		|| '4559';
+	$param{user}		||= $User		|| 'anonymous';
 	$param{password}	||= $Password	|| 'anonymous';
 	$param{passive}		||= $Passive	|| '0';
 
@@ -69,18 +71,19 @@ sub faxinfo {
 }
 
 
-sub faxrm {
+sub faxrm
+{
 	shift if $_[0] eq __PACKAGE__;
 	my %param  = scalar @_ == 1 ? ('jobid', shift) : @_;
-	my $self  = {
+	my $self = {
 		TRACE	=> '',
 		SUCCESS	=> '',
 	};
 
 	##  Set defaults
-	$param{host}		||= $Host	|| 'localhost';
-	$param{port}		||= $Port	|| '4559';
-	$param{user}		||= $User	|| 'anonymous';
+	$param{host}		||= $Host		|| 'localhost';
+	$param{port}		||= $Port		|| '4559';
+	$param{user}		||= $User		|| 'anonymous';
 	$param{password}	||= $Password	|| 'anonymous';
 	$param{passive}		||= $Passive	|| '0';
 
@@ -105,19 +108,20 @@ sub faxrm {
 }
 
 
-sub faxstat {
+sub faxstat
+{
 	shift if $_[0] eq __PACKAGE__;
 	my %param  = @_;
-	my $self  = {
+	my $self = {
 		TRACE	=> '',
 		SUCCESS	=> '',
 		CONTENT	=> '',
 	};
 
 	##  Set defaults
-	$param{host}		||= $Host	|| 'localhost';
-	$param{port}		||= $Port	|| '4559';
-	$param{user}		||= $User	|| 'anonymous';
+	$param{host}		||= $Host		|| 'localhost';
+	$param{port}		||= $Port		|| '4559';
+	$param{user}		||= $User		|| 'anonymous';
 	$param{password}	||= $Password	|| 'anonymous';
 	$param{passive}		||= $Passive	|| '0';
 	$param{filefmt}		||= '';
@@ -135,9 +139,11 @@ sub faxstat {
 	$self->{TRACE} .= $client->message;
 
 	##  Process the task
-	if ($param{info}){
+	if ($param{info})
+	{
 		my $dataconn = $client->retr("status/any.info") || _com_error($client);
-		while ($dataconn->read(my $buffer, 1024)){
+		while ($dataconn->read(my $buffer, 1024))
+		{
 			$self->{CONTENT} .= $buffer;
 		}
 		$dataconn->close;
@@ -145,17 +151,20 @@ sub faxstat {
 	}
 
 	my $dataconn = $client->list("status") || _com_error($client);
-	while ($dataconn->read(my $buffer, 1024)){
+	while ($dataconn->read(my $buffer, 1024))
+	{
 		$self->{CONTENT} .= $buffer;
 	}
 	$dataconn->close;
 	$self->{TRACE} .= $client->message;
 
-	if ($param{files}){
+	if ($param{files})
+	{
 		$client->quot("filefmt", $param{filefmt}) || _com_error($client);
 		my $dataconn = $client->list("docq") || _com_error($client);
 		my $content;
-		while ($dataconn->read(my $buffer, 1024)){
+		while ($dataconn->read(my $buffer, 1024))
+		{
 			$content .= $buffer;
 		}
 		$dataconn->close;
@@ -163,11 +172,13 @@ sub faxstat {
 		$self->{TRACE} .= $client->message;
 	}
 
-	if ($param{queue}){
+	if ($param{queue})
+	{
 		$client->quot("jobfmt", $param{jobfmt}) || _com_error($client);
 		my $dataconn = $client->list("sendq") || _com_error($client);
 		my $content;
-		while ($dataconn->read(my $buffer, 1024)){
+		while ($dataconn->read(my $buffer, 1024))
+		{
 			$content .= $buffer;
 		}
 		$dataconn->close;
@@ -175,11 +186,13 @@ sub faxstat {
 		$self->{TRACE} .= $client->message;
 	}
 
-	if ($param{done}){
+	if ($param{done})
+	{
 		$client->quot("jobfmt", $param{jobfmt}) || _com_error($client);
 		my $dataconn = $client->list("doneq") || _com_error($client);
 		my $content;
-		while ($dataconn->read(my $buffer, 1024)){
+		while ($dataconn->read(my $buffer, 1024))
+		{
 			$content .= $buffer;
 		}
 		$dataconn->close;
@@ -187,11 +200,13 @@ sub faxstat {
 		$self->{TRACE} .= $client->message;
 	}
 
-	if ($param{received}){
+	if ($param{received})
+	{
 		$client->quot("rcvfmt", $param{rcvfmt}) || _com_error($client);
 		my $dataconn = $client->list("recvq") || _com_error($client);
 		my $content;
-		while ($dataconn->read(my $buffer, 1024)){
+		while ($dataconn->read(my $buffer, 1024))
+		{
 			$content .= $buffer;
 		}
 		$dataconn->close;
@@ -207,62 +222,93 @@ sub faxstat {
 }
 
 
-sub sendfax {
+sub sendfax
+{
 	shift if $_[0] eq __PACKAGE__;
 	my %param  = @_;
 	my $hostname = `hostname`; chomp $hostname;
-	my $unique = time . $$ . int(rand 10000);
-	my $self  = {
+	my $self = {
 		JOB_ID	=> '',
 		TRACE	=> '',
 		SUCCESS	=> '',
 	};
 
 	##  Set defaults
-	$param{host}		||= $Host	|| 'localhost';
-	$param{port}		||= $Port	|| '4559';
-	$param{user}		||= $User	|| 'anonymous';
-	$param{password}	||= $Password	|| 'anonymous';
-	$param{passive}		||= $Passive	|| '0';
-	$param{lasttime}	||= '000259';
-	$param{maxdials}	||= '12';
-	$param{maxtries}	||= '3';
-	$param{pagewidth}	||= '216';
-	$param{pagelength}	||= '279';
-	$param{vres}		||= '196';
-	$param{schedpri}	||= '127';
+	$param{host}			||= $Host		|| 'localhost';
+	$param{port}			||= $Port		|| '4559';
+	$param{user}			||= $User		|| 'anonymous';
+	$param{password}		||= $Password	|| 'anonymous';
+	$param{passive}			||= $Passive	|| '0';
+	$param{debug}			||= $Debug		|| '0';
+	$param{lasttime}		||= '000259';
+	$param{maxdials}		||= '12';
+	$param{maxtries}		||= '3';
+	$param{pagewidth}		||= '216';
+	$param{pagelength}		||= '279';
+	$param{vres}			||= '196';
+	$param{schedpri}		||= '127';
 	$param{chopthreshold}	||= '3';
-	$param{notify}		||= 'none';
-	$param{notifyaddr}	||= $NotifyAddr	|| $param{'user'} . '@' . $hostname;
-	$param{sendtime}	||= 'now';
+	$param{notify}			||= 'none';
+	$param{notifyaddr}		||= $NotifyAddr	|| $param{'user'} . '@' . $hostname;
+	$param{sendtime}		||= 'now';
 
 	$self->{PARAM} = \%param;
 
 	##  Basic error checking
 	croak __PACKAGE__ . ": *dialstring* parameter is missing" unless $param{dialstring};
 	croak __PACKAGE__ . ": *docfile* parameter is missing" if (! $param{docfile} && ! $param{poll});
-	croak __PACKAGE__ . ": $param{docfile} does not exist" if ($param{docfile} && ! -e $param{docfile});
 	croak __PACKAGE__ . ": $param{coverfile} does not exist" if ($param{coverfile} && ! -e $param{coverfile});
 
+	if (ref(\$param{docfile}) eq 'SCALAR')
+	{
+		$param{docfiles} = [ $param{docfile} ];
+	}
+	elsif (ref($param{docfile}) eq 'ARRAY')
+	{
+		$param{docfiles} = $param{docfile};
+	}
+	else
+	{
+		croak __PACKAGE__ . ": *docfile* parameter must be a SCALAR or an ARRAY REFERENCE";
+	}
+
+	foreach my $docfile (@{$param{docfiles}})
+	{
+		croak __PACKAGE__ . ": $docfile does not exist" if (! -e $docfile);
+	}
+
+	delete $param{docfile};
+
 	##  Try to connect
-	my $client = Net::FTP->new($param{'host'}, Port => $param{'port'}, Passive => $param{'passive'}) || croak __PACKAGE__ . ": " . $@;
+	my $client = Net::FTP->new($param{'host'}, Port => $param{'port'}, Passive => $param{'passive'}, Debug => $param{'debug'}) || croak __PACKAGE__ . ": " . $@;
 	$client->login($param{'user'}, $param{'password'}) || _com_error($client);
 	$self->{TRACE} .= $client->message;
 	$client->binary || _com_error($client);
 	$self->{TRACE} .= $client->message;
 
 	##  Process the job
-	my $remote_cover = "/tmp/$hostname.$unique.cover";
-	my $remote_document = "/tmp/$hostname.$unique.document";
+	my @tempfiles = ();
 
-	if ($param{coverfile}){
-		$client->put($param{coverfile}, $remote_cover) || _com_error($client);
+	if ($param{coverfile})
+	{
+		my $unique = time . sprintf('%05d', $$) . sprintf('%04d', int(rand 10000));
+		my $remote = '/tmp/cover.' . $hostname . '.' . $unique;
+
+		$client->put($param{coverfile}, $remote) || _com_error($client);	# (STOT would be nice, but Net::FTP doesn`t support it and STOU is broken)
 		$self->{TRACE} .= $client->message;
+
+		push (@tempfiles, $remote);
 	}
 
-	if ($param{docfile}){
-		$client->put($param{docfile}, $remote_document) || _com_error($client);
+	foreach my $docfile (@{$param{docfiles}})
+	{
+		my $unique = time . sprintf('%05d', $$) . sprintf('%04d', int(rand 10000));
+		my $remote = '/tmp/doc.' . $hostname . '.' . $unique;
+
+		$client->put($docfile, $remote) || _com_error($client);
 		$self->{TRACE} .= $client->message;
+
+		push (@tempfiles, $remote);
 	}
 
 	$client->quot("jnew") || _com_error($client);
@@ -313,17 +359,22 @@ sub sendfax {
 	$client->quot("jparm chopthreshold", $param{chopthreshold}) || _com_error($client);
 	$self->{TRACE} .= $client->message;
 
-	if ($param{coverfile}){
-		$client->quot("jparm cover", $remote_cover) || _com_error($client);
+	foreach my $docfile (@tempfiles)
+	{
+		if ($param{coverfile} && $docfile eq $tempfiles[0])
+		{
+			$client->quot("jparm cover", $docfile) or _com_error($client);
+		}
+		else
+		{
+			$client->quot("jparm document", $docfile) or _com_error($client);
+		}
+
 		$self->{TRACE} .= $client->message;
 	}
 
-	if ($param{docfile}){
-		$client->quot("jparm document", $remote_document) || _com_error($client);
-		$self->{TRACE} .= $client->message;
-	}
-
-	if (defined $param{poll}){
+	if (defined $param{poll})
+	{
 		my ($selector, $passwd) = split(" ", $param{poll});
 		$client->quot("jparm poll", $selector || "", $passwd || "") || _com_error($client);
 		$self->{TRACE} .= $client->message;
@@ -341,21 +392,22 @@ sub sendfax {
 }
 
 
-sub sendpage {
+sub sendpage
+{
 	shift if $_[0] eq __PACKAGE__;
 	my %param  = @_;
 	my $hostname = `hostname`; chomp $hostname;
 	my $unique = time . $$ . int(rand 10000);
-	my $self  = {
+	my $self = {
 		JOB_ID	=> '',
 		TRACE	=> '',
 		SUCCESS	=> '',
 	};
 
 	##  Set defaults
-	$param{host}		||= $Host	|| 'localhost';
-	$param{port}		||= $Port	|| '444';
-	$param{user}		||= $User	|| 'anonymous';
+	$param{host}		||= $Host		|| 'localhost';
+	$param{port}		||= $Port		|| '444';
+	$param{user}		||= $User		|| 'anonymous';
 	$param{password}	||= $Password	|| 'anonymous';
 	$param{passive}		||= $Passive	|| '0';
 	$param{maxdials}	||= '12';
@@ -405,7 +457,8 @@ sub sendpage {
 	$self->{JOB_ID} = $1 if $1;
 	$self->{PARAM}->{jobid} = $self->{JOB_ID};
 
-	if ($param{message}){
+	if ($param{message})
+	{
 		$client->quot("mess", $param{message}) || _com_error($client);
 		$self->{TRACE} .= $client->message;
 	}
@@ -423,27 +476,31 @@ sub sendpage {
 
 ######################################################################
 
-sub _com_error {
+sub _com_error
+{
 	my $client = shift;
-	croak __PACKAGE__ . ": Cummunication error: " . $client->message;
+	croak __PACKAGE__ . ": Communication error: " . $client->message;
 }
 
 
-sub _content {
+sub _content
+{
 	my $class = shift;
 	my $self = shift;
 	return $self->{CONTENT} || undef;
 }
 
 
-sub _success {
+sub _success
+{
 	my $class = shift;
 	my $self = shift;
 	return $self->{SUCCESS} || undef;
 }
 
 
-sub _trace {
+sub _trace
+{
 	my $class = shift;
 	my $self = shift;
 	return $self->{TRACE} || undef;
@@ -454,7 +511,8 @@ sub _trace {
 package Fax::Hylafax::Client::Queued;
 
 
-sub faxinfo {
+sub faxinfo
+{
 	my $self = shift;
 	my $conn = Fax::Hylafax::Client->faxinfo(%{$self->{PARAM}});
 	$self->{TRACE} = $conn->trace;
@@ -463,7 +521,8 @@ sub faxinfo {
 }
 
 
-sub faxrm {
+sub faxrm
+{
 	my $self = shift;
 	my $conn = Fax::Hylafax::Client->faxrm(%{$self->{PARAM}});
 	$self->{TRACE} = $conn->trace;
@@ -472,18 +531,21 @@ sub faxrm {
 }
 
 
-sub jobid {
+sub jobid
+{
 	my $self = shift;
 	return $self->{JOB_ID};
 }
 
 
-sub success {
+sub success
+{
 	return Fax::Hylafax::Client->_success(shift);
 }
 
 
-sub trace {
+sub trace
+{
 	return Fax::Hylafax::Client->_trace(shift);
 }
 
@@ -492,17 +554,20 @@ sub trace {
 package Fax::Hylafax::Client::Instant;
 
 
-sub content {
+sub content
+{
 	return Fax::Hylafax::Client->_content(shift);
 }
 
 
-sub success {
+sub success
+{
 	return Fax::Hylafax::Client->_success(shift);
 }
 
 
-sub trace {
+sub trace
+{
 	return Fax::Hylafax::Client->_trace(shift);
 }
 
@@ -528,7 +593,7 @@ Fax::Hylafax::Client - Simple HylaFAX client
 =head1 DESCRIPTION
 
 This is a simple Perl client for HylaFAX fax server (www.hylafax.org). It communicates
-with the server directly through FTP protocol and thus does not require any HylaFAX 
+with the server directly through FTP-like protocol and thus does not require any HylaFAX
 software components to be installed on the client machine.
 
 =head1 MAIN METHODS AND ATTRIBUTES
@@ -564,13 +629,15 @@ Destination string (number) to dial. [REQUIRED]
 
 =item docfile
 
-Full pathname of the main (document) file. Document file must be in one of the
+Full pathname of the document file. This attribute takes a single filename (scalar)
+or a reference to an array of filenames. Document files must be in one of the
 native HylaFAX formats, i.e. Plain Text, PostScript, TIFF Class F, or PDF.
 [REQUIRED unless you use "poll" option]
 
 =item coverfile
 
-Full pathname of the cover page file. All notes about "docfile" apply. [OPTIONAL]
+Full pathname of the cover page file. All notes about "docfile" apply, except
+it only takes one filename as scalar. [OPTIONAL]
 
 =item notifyaddr
 
@@ -892,9 +959,12 @@ Send a fax
           notifyaddr    => 'test@user.com',
      );
 
-     if ($fax->success){
+     if ($fax->success)
+     {
           print "We are OK";
-     } else {
+     }
+     else
+     {
           print $fax->trace;
      }
 
@@ -909,7 +979,10 @@ Misc. examples
 
      my $fax = sendfax(
           dialstring    => '14151234567',
-          docfile       => '/usr/home/test/document.ps',
+          docfile       => [
+                              '/usr/home/test/document1.ps',
+                              '/usr/home/test/document2.ps',
+                           ],
      );
 
      my $task_succeded = $fax->success ? "YES" : "NO";
@@ -918,7 +991,8 @@ Misc. examples
      my $current_job_status = $fax->faxinfo;
 
      my $server_stats = faxstat( info => 1, active => 1 )->content;
-     if (faxinfo($job_id)->content ne 'DONE'){
+     if (faxinfo($job_id)->content ne 'DONE')
+     {
           print "We're not done yet";
 
           $fax->faxrm;
@@ -939,9 +1013,12 @@ Misc. examples
      }
 
      my $other_server_task = faxstats( host => 'other.server.host', user => 'bob', password => 'whatever' );
-     if ($other_server_task->success){
+     if ($other_server_task->success)
+     {
           print $other_server_task->content;
-     } else {
+     }
+     else
+     {
           print "Doh! We failed to get stats from the server: ", $other_server_task->trace;
      }
 
@@ -958,14 +1035,14 @@ Alex Rak B<arak@cpan.org>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2003 Alex Rak.  All rights reserved.
+Copyright (c) 2003,2006 Alex Rak.  All rights reserved.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-HylaFAX man pages L<http://www.hylafax.org/man/>
+HylaFAX man pages L<http://www.hylafax.org/>
 
 =cut
 
